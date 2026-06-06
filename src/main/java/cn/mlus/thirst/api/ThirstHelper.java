@@ -1,0 +1,319 @@
+package cn.mlus.thirst.api;
+
+import com.momosoftworks.coldsweat.api.util.Temperature;
+import cn.mlus.thirst.compat.supernatural.SupernaturalHelper;
+import cn.mlus.thirst.content.purity.ContainerWithPurity;
+import cn.mlus.thirst.content.purity.WaterPurity;
+import cn.mlus.thirst.foundation.common.event.RegisterThirstValueEvent;
+import cn.mlus.thirst.foundation.common.event.ThirstEventFactory;
+import cn.mlus.thirst.foundation.config.CommonConfig;
+import cn.mlus.thirst.foundation.config.ContainerConfig;
+import cn.mlus.thirst.foundation.config.ItemSettingsConfig;
+import cn.mlus.thirst.foundation.config.KeyWordConfig;
+import cn.mlus.thirst.foundation.util.ConfigHelper;
+import cn.mlus.thirst.foundation.util.LoadedValue;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.neoforged.fml.ModList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class ThirstHelper
+{
+    private static boolean useColdSweatCaps = false;
+    private static final float MODIFIER_HARSHNESS = 0.5f;
+    public static Map<Item, Number[]> VALID_DRINKS = LoadedValue.of(() -> ConfigHelper
+            .getItemsWithValues(ItemSettingsConfig.DRINKS.get()))
+            .get();
+    public static Map<Item, Number[]> VALID_FOODS = LoadedValue.of(() -> ConfigHelper
+            .getItemsWithValues(ItemSettingsConfig.FOODS.get()))
+            .get();
+    public static List<String> ITEMS_BLACKLIST = LoadedValue.<List<String>>of(() -> new ArrayList<>(ItemSettingsConfig.ITEMS_BLACKLIST.get()))
+            .get();
+
+    public static List<Item> containers = LoadedValue.of(() -> ConfigHelper
+                    .getItems(ContainerConfig.CONTAINERS.get()))
+            .get();
+
+    public static void init(){
+        ThirstEventFactory.onRegisterThirstValue();
+        for (Item item : containers){
+            if(item.equals(Items.AIR))
+                continue;
+            WaterPurity.addContainer(new ContainerWithPurity(item));
+        }
+    }
+
+    public static boolean enableKeywordConfig = KeyWordConfig.ENABLE_KEYWORD_CONFIG.get();
+    public static String keywordBlackList = KeyWordConfig.KEYWORD_BLACKLIST.get();
+    public static String keywordDrink = KeyWordConfig.KEYWORD_DRINK.get();
+    public static String keywordSoup = KeyWordConfig.KEYWORD_SOUP.get();
+    public static String keywordFruit = KeyWordConfig.KEYWORD_FRUIT.get();
+    public static int defaultDrinkHydration = KeyWordConfig.getDrinkHydration();
+    public static int defaultDrinkQuenched = KeyWordConfig.getDrinkQuenchness();
+    public static int defaultSoupHydration = KeyWordConfig.getSoupHydration();
+    public static int defaultSoupQuenched = KeyWordConfig.getSoupQuenchness();
+    public static int defaultFruitHydration = KeyWordConfig.getFruitHydration();
+    public static int defaultFruitQuenched = KeyWordConfig.getFruitQuenchness();
+    private static String syncedSettingsHash = "";
+
+    public static boolean itemRestoresThirst(ItemStack itemStack)
+    {
+        return isDrink(itemStack) ||
+                isFood(itemStack) || checkKeywords(itemStack);
+    }
+
+    public static boolean playerRestoresThirst(ItemStack itemStack, Player player)
+    {
+        if (ModList.get().isLoaded("supernatural"))
+        {
+            return SupernaturalHelper.canDrinkItem(itemStack, player);
+        }
+        return true;
+    }
+
+    public static boolean isDrink(ItemStack itemStack)
+    {
+        return !ITEMS_BLACKLIST.contains(itemStack.getItem().toString()) &&
+                VALID_DRINKS.containsKey(itemStack.getItem());
+    }
+
+
+    public static boolean isFood(ItemStack itemStack)
+    {
+        return !ITEMS_BLACKLIST.contains(itemStack.getItem().toString()) &&
+                VALID_FOODS.containsKey(itemStack.getItem());
+    }
+
+    /**
+     * Subscribe #{@link RegisterThirstValueEvent} to use the api.
+     * */
+    @Deprecated(forRemoval = true, since = "1.3.8")
+    @SuppressWarnings("unused")
+    public static void addFood(Item item, int thirst, int quenched) {}
+
+    /**
+     * Subscribe #{@link RegisterThirstValueEvent} to use the api.
+     * */
+    @Deprecated(forRemoval = true, since = "1.3.8")
+    @SuppressWarnings("unused")
+    public static void addDrink(Item item, int thirst, int quenched) {}
+
+    public static int getThirst(ItemStack itemStack)
+    {
+        Item item = itemStack.getItem();
+        if(VALID_DRINKS.containsKey(item)) {
+            return VALID_DRINKS.get(item)[0].intValue();
+        }
+        else
+            return VALID_FOODS.get(item)[0].intValue();
+    }
+
+    public static int getQuenched(ItemStack itemStack)
+    {
+        Item item = itemStack.getItem();
+
+        if(VALID_DRINKS.containsKey(item))
+            return VALID_DRINKS.get(item)[1].intValue();
+        else
+            return VALID_FOODS.get(item)[1].intValue();
+    }
+
+    public static int getPurity(ItemStack item)
+    {
+        return WaterPurity.getPurity(item);
+    }
+
+    public static void applySyncedItemSettings(
+            Map<Item, Number[]> drinks,
+            Map<Item, Number[]> foods,
+            List<String> blacklist,
+            boolean keywordEnabled,
+            String syncedKeywordBlacklist,
+            String syncedKeywordDrink,
+            String syncedKeywordSoup,
+            String syncedKeywordFruit,
+            int syncedDrinkHydration,
+            int syncedDrinkQuenched,
+            int syncedSoupHydration,
+            int syncedSoupQuenched,
+            int syncedFruitHydration,
+            int syncedFruitQuenched
+    )
+    {
+        VALID_DRINKS = drinks;
+        VALID_FOODS = foods;
+        ITEMS_BLACKLIST = new ArrayList<>(blacklist);
+        enableKeywordConfig = keywordEnabled;
+        keywordBlackList = syncedKeywordBlacklist;
+        keywordDrink = syncedKeywordDrink;
+        keywordSoup = syncedKeywordSoup;
+        keywordFruit = syncedKeywordFruit;
+        defaultDrinkHydration = syncedDrinkHydration;
+        defaultDrinkQuenched = syncedDrinkQuenched;
+        defaultSoupHydration = syncedSoupHydration;
+        defaultSoupQuenched = syncedSoupQuenched;
+        defaultFruitHydration = syncedFruitHydration;
+        defaultFruitQuenched = syncedFruitQuenched;
+    }
+
+    public static void applySyncedContainers(List<Item> syncedContainers)
+    {
+        containers = new ArrayList<>(syncedContainers);
+    }
+
+    public static boolean hasSyncedSettingsHash(String settingsHash)
+    {
+        return syncedSettingsHash.equals(settingsHash);
+    }
+
+    public static void applySyncedSettingsHash(String settingsHash)
+    {
+        syncedSettingsHash = settingsHash;
+    }
+
+    public static void shouldUseColdSweatCaps(boolean should)
+    {
+        useColdSweatCaps = should;
+    }
+    public static float getExhaustionFireProtModifier(Player player)
+    {
+        final float perLevelMultiplier = 0.0625f;
+        float totalLevels = EnchantmentHelper.getDamageProtection((ServerLevel) player.level(),player, player.damageSources().onFire()) / 2;
+        //In some situations, the player can have more than 12 levels of fire protection due to some bugs
+        if(totalLevels>12) totalLevels=12;
+        return 1.0f - ((totalLevels * perLevelMultiplier) * 0.75f);
+    }
+
+    public static float getExhaustionFireResistanceModifier(Player player){
+        if(player.hasEffect(MobEffects.FIRE_RESISTANCE)){
+            return (float) CommonConfig.FIRE_RESISTANCE_DEHYDRATION.get() /100;
+        }else return 1.0f;
+    }
+
+    /**
+     * Calculates the thirst depletion speed modifier based on the player's
+     * temperature and humidity. If the mod "Cold Sweat" is present, the temperature used is
+     * the one calculated from the mod, otherwise both parameters are entirely
+     * dependent on the biome the player is standing in.
+     */
+    public static float getExhaustionBiomeModifier(Player player)
+    {
+        BlockPos pos = player.getOnPos();
+        Level level = player.level();
+
+        if(level.dimensionType().ultraWarm())
+            return CommonConfig.NETHER_THIRST_DEPLETION_MODIFIER.get().floatValue();
+        else
+        {
+            Biome biome = level.getBiome(pos).value();
+
+            //humidity range: 0 - 0.8 == 0.8 midpoint: 0.4
+            float humidity = biome.getModifiedClimateSettings().downfall() + 0.6f;
+            if(humidity <= 0.6)
+                humidity += 0.5;
+
+            //temperature range: -0.8 - 2 == 2.8 midpoint: 0.8
+            float temp = biome.getBaseTemperature() + 0.2f;
+
+            if(useColdSweatCaps)
+                {
+                    temp = (float) (Temperature.get(player, Temperature.Trait.BODY) / 100f);
+                }
+            else
+            {
+                if(temp <= 0)
+                    temp = (float) Math.exp(temp);
+                else if(temp > 1)
+                    temp /= 2;
+            }
+
+            float thirstModifier = CommonConfig.THIRST_DEPLETION_MODIFIER.get().floatValue() * (temp  / humidity);
+
+            if(thirstModifier < 1)
+            {
+                float modifierOffset = 1 - thirstModifier;
+                modifierOffset *= MODIFIER_HARSHNESS;
+                thirstModifier = 1 - modifierOffset;
+            }
+
+            return thirstModifier;
+        }
+    }
+
+    /**
+     * Function from Thirst Was Remade, handles water items added from the
+     * keyword config file
+     * @param itemStack item to be checked
+     * @return if the item contains water
+     */
+
+    private static boolean checkKeywords(ItemStack itemStack)
+    {
+        if(!enableKeywordConfig)
+            return false;
+
+        if(itemStack.getFoodProperties(null) != null)
+            return false;
+
+        String pattern = keywordBlackList;
+        Matcher matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
+                .matcher(itemStack.getDescriptionId());
+
+        if(matcher.find())
+            return false;
+
+        pattern = keywordDrink;
+        matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
+                .matcher(itemStack.getDescriptionId());
+
+        boolean hasWater=matcher.find();
+        if(hasWater)
+        {
+            VALID_DRINKS.put(itemStack.getItem(), new Number[]{
+                    defaultDrinkHydration,
+                    defaultDrinkQuenched
+            });
+            return true;
+        }
+
+        pattern = keywordSoup;
+        matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
+                .matcher(itemStack.getDescriptionId());
+
+        hasWater=matcher.find();
+        if(hasWater)
+        {
+            VALID_FOODS.put(itemStack.getItem(), new Number[]{
+                    defaultSoupHydration,
+                    defaultSoupQuenched
+            });
+            return true;
+        }
+
+        pattern = keywordFruit;
+        matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
+                .matcher(itemStack.getDescriptionId());
+
+        hasWater = matcher.find();
+        if(hasWater)
+            VALID_FOODS.put(itemStack.getItem(), new Number[]{
+                    defaultFruitHydration,
+                    defaultFruitQuenched
+            });
+
+        return hasWater;
+    }
+}
