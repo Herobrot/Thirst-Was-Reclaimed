@@ -1,0 +1,3 @@
+Inside your minecraft folder, in the config folder, and inside the thirst folder, you'll find the mod configuration files. The `client.toml` file contains all the things you can modify without changing files on the server (if you play singleplayer, ignore all this talk), and the `common.toml` contains things you have to tweak from the server (so same path but on your server's minecraft folder).
+
+The `item-settings.toml` file is explained in detail in the [Adding and editing items with hydration values](https://github.com/mlus-asuka/Thirst-Was-Reclaimed/wiki/Adding-and-editing-items-with-hydration-values) page, and the `keyword.toml` in the [Adding items with keywords](https://github.com/mlus-asuka/Thirst-Was-Reclaimed/wiki/Adding-items-with-keywords) page
