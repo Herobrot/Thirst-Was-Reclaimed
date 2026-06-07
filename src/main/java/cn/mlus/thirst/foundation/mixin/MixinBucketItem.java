@@ -20,34 +20,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BucketItem.class)
 public class MixinBucketItem
 {
-    private boolean shouldModify;
-    private int purity;
+    private static final ThreadLocal<Integer> BUCKET_PURITY = new ThreadLocal<>();
 
     @Inject(method = "use", at = @At("HEAD"))
     public void setPurity(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir)
     {
         if(!WaterPurity.isEnabled())
         {
-            shouldModify = false;
+            BUCKET_PURITY.set(null);
             return;
         }
 
         BlockPos blockPos = MathHelper.getPlayerPOVHitResult(player.level(), player, ClipContext.Fluid.SOURCE_ONLY).getBlockPos();
-
-        shouldModify = (level.getFluidState(blockPos).is(FluidTags.WATER) && level.getFluidState(blockPos).isSource());
-
-        if(shouldModify)
-            purity = WaterPurity.getBlockPurity(level, blockPos);
+        boolean shouldModify = level.getFluidState(blockPos).is(FluidTags.WATER) && level.getFluidState(blockPos).isSource();
+        BUCKET_PURITY.set(shouldModify ? WaterPurity.getBlockPurity(level, blockPos) : null);
     }
 
     @ModifyArg(method = "use", index = 2, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemUtils;createFilledResult(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"))
     private ItemStack addPurity(ItemStack result)
     {
-        if(shouldModify)
+        Integer purity = BUCKET_PURITY.get();
+        if (purity != null)
         {
-            WaterPurity.addPurity(result,purity);
+            WaterPurity.addPurity(result, purity);
         }
-
         return result;
+    }
+
+    @Inject(method = "use", at = @At("RETURN"))
+    public void cleanup(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir)
+    {
+        BUCKET_PURITY.remove();
     }
 }

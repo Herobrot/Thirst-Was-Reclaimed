@@ -18,32 +18,37 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BottleItem.class)
 public class MixinBottleItem
 {
-    private boolean shouldModify;
-    private int purity;
+    private static final ThreadLocal<Integer> BOTTLE_PURITY = new ThreadLocal<>();
 
     @Inject(method = "turnBottleIntoItem", at = @At("HEAD"))
     public void setPurity(ItemStack source, Player player, ItemStack result, CallbackInfoReturnable<ItemStack> cir)
     {
         if(!WaterPurity.isEnabled())
         {
-            shouldModify = false;
+            BOTTLE_PURITY.set(null);
             return;
         }
 
         Level level = player.level();
-        BlockPos fluidPos = MathHelper.getPlayerPOVHitResult(player.level(), player, ClipContext.Fluid.SOURCE_ONLY).getBlockPos();
-
-        shouldModify = level.getFluidState(fluidPos).is(FluidTags.WATER) && level.getFluidState(fluidPos).isSource();
-        if(shouldModify)
-            purity = WaterPurity.getBlockPurity(level, fluidPos);
+        BlockPos fluidPos = MathHelper.getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY).getBlockPos();
+        boolean shouldModify = level.getFluidState(fluidPos).is(FluidTags.WATER) && level.getFluidState(fluidPos).isSource();
+        BOTTLE_PURITY.set(shouldModify ? WaterPurity.getBlockPurity(level, fluidPos) : null);
     }
 
     @ModifyArg(method = "turnBottleIntoItem", index = 2, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemUtils;createFilledResult(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"))
     private ItemStack addPurity(ItemStack result)
     {
-        if(shouldModify)
+        Integer purity = BOTTLE_PURITY.get();
+        if (purity != null)
+        {
             WaterPurity.addPurity(result, purity);
-
+        }
         return result;
+    }
+
+    @Inject(method = "turnBottleIntoItem", at = @At("RETURN"))
+    public void cleanup(ItemStack source, Player player, ItemStack result, CallbackInfoReturnable<ItemStack> cir)
+    {
+        BOTTLE_PURITY.remove();
     }
 }

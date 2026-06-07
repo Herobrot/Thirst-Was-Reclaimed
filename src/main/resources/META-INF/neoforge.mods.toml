@@ -3,7 +3,7 @@ modLoader="javafml" #mandatory
 loaderVersion="${loader_version_range}" #mandatory
 license="${mod_license}"
 
-issueTrackerURL="https://github.com/ghen-git/Thirst-Mod/issues"
+issueTrackerURL="https://github.com/mlus-asuka/Thirst-Was-Reclaimed/issues"
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -12,8 +12,8 @@ displayName="${mod_name}"
 # A URL to query for updates for this mod. See the JSON update specification https://docs.neoforged.net/docs/misc/updatechecker/
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 
-displayURL="https://github.com/ghen-git/Thirst-Mod"
-logoFile="thirstwastaken.png"
+displayURL="https://github.com/mlus-asuka/Thirst-Was-Reclaimed"
+logoFile="thirst-was-reclaimed.png"
 credits="Cold Sweat, Create, Farmer's Delight and all the mods' sources that helped me actually program this."
 authors="${mod_authors}"
 

@@ -15,5 +15,11 @@
   "thirst.ponder.sand_filter.header": "Oczyszczanie wody Filtrem Piaskowym",
   "thirst.ponder.sand_filter.text_1": "Filter Piaskowy oczyszcza w jednym stopniu pompowaną przez niego wodę",
   "thirst.ponder.sand_filter.text_2": "Brudna Woda musi być pompowana z góry...",
-  "thirst.ponder.sand_filter.text_3": "a Oczyszczona Woda może być wypompowywana z dołu"
+  "thirst.ponder.sand_filter.text_3": "a Oczyszczona Woda może być wypompowywana z dołu",
+  "command.thirst.query": "Aktualne pragnienie: %1$s, Aktualne ugaszenie: %2$s",
+  "command.thirst.set": "Ustaw pragnienie na %1$s, ugaszenie na %2$s",
+  "command.thirst.enable": "Włącz pragnienie dla %1$s",
+  "command.thirst.disable": "Wyłącz pragnienie dla %1$s",
+
+  "effect.thirst.quenchness": "Ugaszenie"
 }
