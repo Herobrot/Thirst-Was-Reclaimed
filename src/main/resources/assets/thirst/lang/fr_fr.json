@@ -8,7 +8,7 @@
   "thirst.container.kettle.no_water": "Pas d'eau",
   "thirst.container.kettle.has_single_water": "Contient 1 verre d'eau %s",
   "thirst.container.kettle.has_many_water": "Contient %1$s verres d'eau %2$s",
-  "itemGroup.thirst": "Thirst was Taken",
+  "itemGroup.thirst": "Thirst was Reclaimed",
   "thirst.purity.dirty": "Sale",
   "thirst.purity.slightly_dirty": "Un peu sale",
   "thirst.purity.acceptable": "Buvable",

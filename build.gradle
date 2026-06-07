@@ -22,7 +22,7 @@ version = "${mod_version}"
 group = 'dev.ghen.thirst'
 
 java {
-    archivesBaseName = 'ThirstWasTaken'
+    archivesBaseName = 'ThirstWasReclaimed'
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 compileJava {
@@ -161,7 +161,7 @@ jar {
                 "Specification-Title"     : "thirst",
                 "Specification-Vendor"    : "thirstsareus",
                 "Specification-Version"   : "1", // We are version 1 of ourselves
-                "Implementation-Title"    : "ThirstWasTaken",
+                "Implementation-Title"    : "ThirstWasReclaimed",
                 "Implementation-Version"  : mod_version,
                 "Implementation-Vendor"   : "thirstsareus",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
@@ -176,7 +176,7 @@ publishing {
     publications {
         mavenJava(MavenPublication.class) {
             groupId = group
-            artifactId = "ThirstWasTaken"
+            artifactId = "ThirstWasReclaimed"
             version = "${mod_version}"
             from components.java
         }

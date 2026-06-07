@@ -8,7 +8,7 @@ issueTrackerURL="https://github.com/mlus-asuka/Thirst-Was-Reclaimed/issues"
 [[mods]]
 modId="thirst"
 version="${file.jarVersion}"
-displayName="Thirst was Taken"
+displayName="Thirst was Reclaimed"
 # A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 displayURL="https://github.com/mlus-asuka/Thirst-Was-Reclaimed"
