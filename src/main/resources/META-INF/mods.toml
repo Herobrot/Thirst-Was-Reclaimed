@@ -1,0 +1,38 @@
+# The overall format is standard TOML format, v0.5.0.
+# Note that there are a couple of TOML lists in this file.
+# Find more information on toml format here:  https://github.com/toml-lang/toml
+modLoader="javafml"
+loaderVersion="[40,)"
+license="MIT license"
+issueTrackerURL="https://github.com/mlus-asuka/Thirst-Was-Reclaimed/issues"
+[[mods]]
+modId="thirst"
+version="${file.jarVersion}"
+displayName="Thirst was Reclaimed"
+# A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
+#updateJSONURL="https://change.me.example.invalid/updates.json" #optional
+displayURL="https://github.com/mlus-asuka/Thirst-Was-Reclaimed"
+logoFile="thirst-was-reclaimed.png"
+credits="Cold Sweat, Create, Farmer's Delight and all the mods' sources that helped me actually program this."
+authors="mlus"
+description='''
+Brand new take on the thirst-bar mechanic, compatible with a lot of contemporary mods
+'''
+[[dependencies.thirst]]
+    modId="forge"
+    mandatory=true
+    versionRange="[40,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.thirst]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18.2,1.19)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.thirst]]
+    modId="create"
+    mandatory=false
+    versionRange="[0.5.1.a,)"
+    ordering="NONE"
+    side="BOTH"
