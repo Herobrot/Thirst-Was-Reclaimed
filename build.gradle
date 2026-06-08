@@ -19,7 +19,7 @@ apply plugin: 'org.spongepowered.mixin'
 
 
 version = mod_version
-group = 'dev.ghen.thirst'
+group = 'cn.mlus.thirst'
 
 java {
     archivesBaseName = 'ThirstWasReclaimed'
