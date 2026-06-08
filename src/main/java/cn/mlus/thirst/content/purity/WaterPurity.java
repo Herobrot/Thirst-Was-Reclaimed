@@ -611,7 +611,6 @@ public class WaterPurity
     {
         if(!isEnabled()) return true;
         if(!isWaterFilledContainer(item)) return true;
-        if(!hasPurity(item)) return true;
         return givePurityEffects(player, ThirstHelper.getPurity(item));
     }
 
