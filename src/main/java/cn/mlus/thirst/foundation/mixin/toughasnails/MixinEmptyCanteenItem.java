@@ -11,7 +11,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,6 +43,7 @@ public abstract class MixinEmptyCanteenItem {
 
         if (!world.mayInteract(player, blockPos)){
             cir.setReturnValue(InteractionResultHolder.pass(stack));
+            return;
         }
 
         if(level.getFluidState(blockPos).is(FluidTags.WATER))
@@ -63,9 +63,7 @@ public abstract class MixinEmptyCanteenItem {
                 filledItem = TANItems.DIRTY_WATER_CANTEEN.get().getDefaultInstance();
             }
 
-            ItemStack result = ItemUtils.createFilledResult(stack, player, filledItem);
-
-            cir.setReturnValue(InteractionResultHolder.sidedSuccess(replaceCanteen(stack, player, result), world.isClientSide()));
+            cir.setReturnValue(InteractionResultHolder.sidedSuccess(replaceCanteen(stack, player, filledItem), world.isClientSide()));
         }
         else if (state.getBlock() instanceof RainCollectorBlock) {
             int waterLevel = state.getValue(RainCollectorBlock.LEVEL);

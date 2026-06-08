@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static cn.mlus.thirst.content.purity.WaterPurity.hasPurity;
-
 public class ThirstHelper
 {
     private static boolean useColdSweatCaps = false;
@@ -185,12 +183,7 @@ public class ThirstHelper
 
     public static int getPurity(ItemStack item)
     {
-        if(!hasPurity(item))
-            return WaterPurity.MISSING_PURITY;
-        else {
-            assert item.getTag() != null;
-            return item.getTag().getInt("Purity");
-        }
+        return WaterPurity.getPurity(item);
     }
 
     public static void shouldUseColdSweatCaps(boolean should)
