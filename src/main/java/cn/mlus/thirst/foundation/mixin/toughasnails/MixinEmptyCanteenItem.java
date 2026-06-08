@@ -7,12 +7,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,12 +36,11 @@ public abstract class MixinEmptyCanteenItem {
 
     @Shadow public abstract Item getDirtyWaterCanteen();
 
-    @Inject(method = "use",at =@At("HEAD"), cancellable = true)
-    private void use(Level world, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir){
+    @Inject(method = "fillCanteen", at = @At("HEAD"), cancellable = true, remap = false)
+    private void fillCanteen(Level world, Player player, ItemStack stack, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir){
         if(!WaterPurity.isEnabled())
             return;
 
-        ItemStack stack = player.getItemInHand(hand);
         Level level = player.level();
 
         BlockPos blockPos = MathHelper.getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY).getBlockPos();
@@ -51,6 +48,7 @@ public abstract class MixinEmptyCanteenItem {
 
         if (!world.mayInteract(player, blockPos)){
             cir.setReturnValue(InteractionResultHolder.pass(stack));
+            return;
         }
 
         if(level.getFluidState(blockPos).is(FluidTags.WATER))
@@ -70,9 +68,7 @@ public abstract class MixinEmptyCanteenItem {
                 filledItem = getDirtyWaterCanteen().getDefaultInstance();
             }
 
-            ItemStack result = ItemUtils.createFilledResult(stack, player, filledItem);
-
-            cir.setReturnValue(InteractionResultHolder.sidedSuccess(replaceCanteen(stack, player, result), world.isClientSide()));
+            cir.setReturnValue(InteractionResultHolder.sidedSuccess(replaceCanteen(stack, player, filledItem), world.isClientSide()));
         }
         else if (state.getBlock() instanceof RainCollectorBlock) {
             int waterLevel = state.getValue(RainCollectorBlock.LEVEL);
