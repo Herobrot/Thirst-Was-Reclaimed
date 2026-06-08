@@ -1,13 +1,12 @@
 package cn.mlus.thirst.foundation.network.message;
 
 import cn.mlus.thirst.Thirst;
-import cn.mlus.thirst.foundation.common.capability.ModAttachment;
-import cn.mlus.thirst.foundation.config.CommonConfig;
 import cn.mlus.thirst.compat.supernatural.SupernaturalHelper;
 import cn.mlus.thirst.content.purity.WaterPurity;
+import cn.mlus.thirst.foundation.common.capability.ModAttachment;
+import cn.mlus.thirst.foundation.config.CommonConfig;
 import cn.mlus.thirst.foundation.util.MathHelper;
 import io.netty.buffer.ByteBuf;
-import net.neoforged.fml.ModList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -19,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
